@@ -145,6 +145,7 @@ module Opscode
       START_CONTENT = '<field name="content">'
       CLOSE_FIELD = "</field>"
 
+      FLD_ID_FMT      = '<field name="id">%s</field>'
       FLD_CHEF_ID_FMT = '<field name="X_CHEF_id_CHEF_X">%s</field>'
       FLD_CHEF_DB_FMT = '<field name="X_CHEF_database_CHEF_X">%s</field>'
       FLD_CHEF_TY_FMT = '<field name="X_CHEF_type_CHEF_X">%s</field>'
@@ -169,6 +170,7 @@ module Opscode
       def pointyize_add
         xml = ""
         xml << START_XML << ADD_DOC
+        xml << (FLD_ID_FMT % @obj_id)
         xml << (FLD_CHEF_ID_FMT % @obj_id)
         xml << (FLD_CHEF_DB_FMT % @database)
         xml << (FLD_CHEF_TY_FMT % @obj_type)
