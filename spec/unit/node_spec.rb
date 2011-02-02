@@ -21,7 +21,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 require 'ostruct'
-require 'opscode/expander/node'
+require 'chef/expander/node'
 
 describe Expander::Node do
 
@@ -58,7 +58,7 @@ describe Expander::Node do
     end
 
     it "names its shared control queue using a constant/consistent name" do
-      @node.shared_control_queue_name.should == "opscode-platform-control--shared"
+      @node.shared_control_queue_name.should == "chef-search-control--shared"
     end
 
     it "names its exclusive control queue after its hostname, pid, and guid" do
@@ -70,7 +70,7 @@ describe Expander::Node do
     end
 
     it "names the broadcast control exchange using a consistent name" do
-      @node.broadcast_control_exchange_name.should == 'opscode-platfrom-control--broadcast'
+      @node.broadcast_control_exchange_name.should == 'chef-search-control--broadcast'
     end
 
     it "generates its hash from a string concatenting the hostname, pid and guid" do

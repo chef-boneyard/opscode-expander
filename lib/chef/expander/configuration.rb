@@ -22,11 +22,11 @@ require 'pp'
 require 'optparse'
 require 'singleton'
 
-require 'opscode/expander/flattener'
-require 'opscode/expander/loggable'
-require 'opscode/expander/version'
+require 'chef/expander/flattener'
+require 'chef/expander/loggable'
+require 'chef/expander/version'
 
-module Opscode
+module Chef
   module Expander
 
     def self.config

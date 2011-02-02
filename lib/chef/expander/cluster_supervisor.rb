@@ -18,12 +18,12 @@
 # limitations under the License.
 #
 
-require 'opscode/expander/loggable'
-require 'opscode/expander/version'
-require 'opscode/expander/configuration'
-require 'opscode/expander/vnode_supervisor'
+require 'chef/expander/loggable'
+require 'chef/expander/version'
+require 'chef/expander/configuration'
+require 'chef/expander/vnode_supervisor'
 
-module Opscode
+module Chef
   module Expander
     #==ClusterSupervisor
     # Manages a cluster of opscode-expander processes. Usually this class will
@@ -60,7 +60,7 @@ module Opscode
         trap(:TERM) { stop(:TERM)}
         Expander.init_config(ARGV)
 
-        log.info("Opscode Expander #{VERSION} starting cluster with #{Expander.config.node_count} nodes")
+        log.info("Chef Search Expander #{VERSION} starting cluster with #{Expander.config.node_count} nodes")
         
         start_workers
         maintain_workers

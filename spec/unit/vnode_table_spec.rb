@@ -20,8 +20,8 @@
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-require 'opscode/expander/vnode_table'
-require 'opscode/expander/vnode_supervisor'
+require 'chef/expander/vnode_table'
+require 'chef/expander/vnode_supervisor'
 
 describe Expander::VNodeTable do
   before do

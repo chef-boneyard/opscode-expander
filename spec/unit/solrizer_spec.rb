@@ -21,7 +21,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 require 'stringio'
-require 'opscode/expander/solrizer'
+require 'chef/expander/solrizer'
 require 'yajl'
 require 'rexml/document'
 

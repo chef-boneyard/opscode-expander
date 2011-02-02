@@ -25,7 +25,7 @@ require "bundler/setup"
 
 $:.unshift(File.dirname(__FILE__) + '/../lib/')
 
-require 'opscode/expander'
-require 'opscode/expander/control'
+require 'chef_search/expander'
+require 'chef_search/expander/control'
 
 Opscode::Expander::Control.run(ARGV)

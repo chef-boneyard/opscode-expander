@@ -23,9 +23,9 @@ require 'amqp'
 require 'mq'
 require 'open3'
 
-require 'opscode/expander/loggable'
+require 'chef/expander/loggable'
 
-module Opscode
+module Chef
   module Expander
     class Node
 

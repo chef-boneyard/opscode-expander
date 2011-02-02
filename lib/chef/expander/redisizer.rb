@@ -21,11 +21,11 @@
 require 'yajl'
 require 'fast_xs'
 require 'em-http-request'
-require 'opscode/expander/loggable'
-require 'opscode/expander/flattener'
+require 'chef/expander/loggable'
+require 'chef/expander/flattener'
 require 'redis'
 
-module Opscode
+module Chef
   module Expander
     class Redisizer
 

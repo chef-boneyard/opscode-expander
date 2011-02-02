@@ -21,7 +21,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 require 'stringio'
-require 'opscode/expander/configuration'
+require 'chef/expander/configuration'
 
 describe Expander::Configuration do
   before do

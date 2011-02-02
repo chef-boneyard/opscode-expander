@@ -25,12 +25,12 @@ require 'amqp'
 require 'mq'
 require 'highline'
 
-require 'opscode/expander/node'
-require 'opscode/expander/configuration'
+require 'chef/expander/node'
+require 'chef/expander/configuration'
 
 require 'pp'
 
-module Opscode
+module Chef
   module Expander
     class Control
 

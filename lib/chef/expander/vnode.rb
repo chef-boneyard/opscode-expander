@@ -22,10 +22,10 @@ require 'eventmachine'
 require 'amqp'
 require 'mq'
 
-require 'opscode/expander/loggable'
-require 'opscode/expander/solrizer'
+require 'chef/expander/loggable'
+require 'chef/expander/solrizer'
 
-module Opscode
+module Chef
   module Expander
     class VNode
       include Loggable

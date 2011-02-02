@@ -19,10 +19,10 @@
 #
 
 require 'yajl'
-require 'opscode/expander/node'
-require 'opscode/expander/loggable'
+require 'chef/expander/node'
+require 'chef/expander/loggable'
 
-module Opscode
+module Chef
   module Expander
     class VNodeTable
 

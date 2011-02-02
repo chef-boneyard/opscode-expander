@@ -30,7 +30,7 @@ require 'yajl'
 require 'uuidtools'
 require 'word_salad'
 
-require 'opscode/expander/configuration'
+require 'chef_search/expander/configuration'
 
 Opscode::Expander.init_config(ARGV)
 

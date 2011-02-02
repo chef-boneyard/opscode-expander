@@ -23,9 +23,9 @@ require 'stringio'
 require 'rubygems'
 require 'bunny'
 $:.unshift(File.dirname(__FILE__) + '/../lib/')
-require 'opscode/expander'
+require 'chef/expander'
 
-include Opscode
+include Chef
 
 OPSCODE_EXPANDER_MQ_CONFIG = {:user => "guest", :pass => "guest", :vhost => '/opscode-expander-test'}
 

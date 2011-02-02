@@ -20,7 +20,7 @@
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-require 'opscode/expander/vnode_supervisor'
+require 'chef/expander/vnode_supervisor'
 
 describe Expander::VNodeSupervisor do
   before do

@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-require 'opscode/expander/configuration'
+require 'chef/expander/configuration'
 
-module Opscode
+module Chef
   module Expander
     # Flattens and expands nested Hashes representing Chef objects
     # (e.g, Nodes, Roles, DataBagItems, etc.) into flat Hashes so the

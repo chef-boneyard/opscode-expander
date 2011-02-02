@@ -25,7 +25,7 @@ require "bundler/setup"
 
 $:.unshift(File.dirname(__FILE__) + '/../lib/')
 
-require 'opscode/expander'
-require 'opscode/expander/cluster_supervisor'
+require 'chef_search/expander'
+require 'chef_search/expander/cluster_supervisor'
 
 Opscode::Expander::ClusterSupervisor.new.start

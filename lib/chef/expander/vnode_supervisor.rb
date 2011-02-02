@@ -22,12 +22,12 @@ require 'yajl'
 require 'eventmachine'
 require 'amqp'
 require 'mq'
-require 'opscode/expander/version'
-require 'opscode/expander/loggable'
-require 'opscode/expander/node'
-require 'opscode/expander/vnode'
-require 'opscode/expander/vnode_table'
-require 'opscode/expander/configuration'
+require 'chef/expander/version'
+require 'chef/expander/loggable'
+require 'chef/expander/node'
+require 'chef/expander/vnode'
+require 'chef/expander/vnode_table'
+require 'chef/expander/configuration'
 
 module ::AMQP
   def self.hard_reset!
@@ -38,7 +38,7 @@ module ::AMQP
   end
 end
 
-module Opscode
+module Chef
   module Expander
     class VNodeSupervisor
       include Loggable
@@ -76,7 +76,7 @@ module Opscode
 
         Expander.init_config(ARGV)
 
-        log.info("Opscode Expander #{VERSION} starting up.")
+        log.info("Chef Search Expander #{VERSION} starting up.")
 
         begin
           AMQP.start(Expander.config.amqp_config) do

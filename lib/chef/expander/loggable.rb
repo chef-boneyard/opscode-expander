@@ -18,19 +18,39 @@
 # limitations under the License.
 #
 
-module Opscode
+require 'mixlib/log'
+
+module Chef
   module Expander
+    module Loggable
+      class Logger
+        include Mixlib::Log
 
-    # VNODES is the number of queues in rabbit that are available for subscribing.
-    # The name comes from riak, where the data ring (160bits) is chunked into
-    # many vnodes; vnodes outnumber physical nodes, so one node hosts several
-    # vnodes. That is the same design we use here.
-    #
-    # See the notes on topic queue benchmarking before adjusting this value.
-    VNODES = 1024
+        def init(*args)
+          @logger = nil
+          super
+        end
 
-    SHARED_CONTROL_QUEUE_NAME = "opscode-platform-control--shared"
-    BROADCAST_CONTROL_EXCHANGE_NAME = 'opscode-platfrom-control--broadcast'
+        [:debug,:info,:warn,:error, :fatal].each do |level|
+          class_eval(<<-LOG_METHOD, __FILE__, __LINE__)
+            def #{level}(message=nil, &block)
+              @logger.#{level}(message, &block)
+            end
+          LOG_METHOD
+        end
+      end
 
+      # TODO: it's admittedly janky to set up the default logging this way.
+      STDOUT.sync = true
+      LOGGER = Logger.new
+      LOGGER.init
+      LOGGER.level = :debug
+
+      def log
+        LOGGER
+      end
+
+    end
   end
 end
+
