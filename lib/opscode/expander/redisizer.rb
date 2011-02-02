@@ -18,34 +18,16 @@
 # limitations under the License.
 #
 
-require 'set'
 require 'yajl'
 require 'fast_xs'
 require 'em-http-request'
 require 'opscode/expander/loggable'
 require 'opscode/expander/flattener'
+require 'redis'
 
 module Opscode
   module Expander
-    class Solrizer
-
-      @active_http_requests = Set.new
-
-      def self.http_request_started(instance)
-        @active_http_requests << instance
-      end
-
-      def self.http_request_completed(instance)
-        @active_http_requests.delete(instance)
-      end
-
-      def self.http_requests_active?
-        !@active_http_requests.empty?
-      end
-
-      def self.clear_http_requests
-        @active_http_requests.clear
-      end
+    class Redisizer
 
       include Loggable
 
@@ -58,9 +40,6 @@ module Opscode
       TYPE        = "type"
       DATABASE    = "database"
       ENQUEUED_AT = "enqueued_at"
-
-      DATA_BAG_ITEM = "data_bag_item"
-      DATA_BAG      = "data_bag"
 
       X_CHEF_id_CHEF_X        = 'X_CHEF_id_CHEF_X'
       X_CHEF_database_CHEF_X  = 'X_CHEF_database_CHEF_X'
@@ -80,10 +59,7 @@ module Opscode
 
       attr_reader :database
 
-      attr_reader :enqueued_at
-
       def initialize(object_command_json, &on_completion_block)
-        @start_time = Time.now.to_f
         @on_completion_block = on_completion_block
         if parsed_message    = parse(object_command_json)
           @action           = parsed_message["action"]
@@ -101,7 +77,6 @@ module Opscode
         @obj_id      = @indexer_payload[ID]
         @obj_type    = @indexer_payload[TYPE]
         @enqueued_at = @indexer_payload[ENQUEUED_AT]
-        @data_bag = @obj_type == DATA_BAG_ITEM ? @chef_object[DATA_BAG] : nil
       end
 
       def parse(serialized_object)
@@ -126,13 +101,7 @@ module Opscode
       end
 
       def add
-        post_to_solr(pointyize_add) do
-          ["indexed #{indexed_object}",
-           "transit,xml,solr-post |",
-           [transit_time, @xml_time, @solr_post_time].join(","),
-           "|"
-          ].join(" ")
-        end
+        post_to_solr(pointyize_add) { "indexed #{indexed_object} transit-time[#{transit_time}s]" }
       rescue Exception => e
         log.error { "#{e.class.name}: #{e.message}\n#{e.backtrace.join("\n")}"}
       end
@@ -155,56 +124,14 @@ module Opscode
         flattened_object
       end
 
-      START_XML   = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      ADD_DOC     = "<add><doc>"
-      DELETE_DOC  = "<delete>"
-      ID_OPEN     = "<id>"
-      ID_CLOSE    = "</id>"
-      END_ADD_DOC = "</doc></add>\n"
-      END_DELETE  = "</delete>\n"
-      START_CONTENT = '<field name="content">'
-      CLOSE_FIELD = "</field>"
-
-      FLD_CHEF_ID_FMT = '<field name="X_CHEF_id_CHEF_X">%s</field>'
-      FLD_CHEF_DB_FMT = '<field name="X_CHEF_database_CHEF_X">%s</field>'
-      FLD_CHEF_TY_FMT = '<field name="X_CHEF_type_CHEF_X">%s</field>'
-      FLD_DATA_BAG    = '<field name="data_bag">%s</field>'
-
-      KEYVAL_FMT = "%s__=__%s "
-
-      # Takes a flattened hash where the values are arrays and converts it into
-      # a dignified XML document suitable for POST to Solr.
-      # The general structure of the output document is like this:
-      #   <?xml version="1.0" encoding="UTF-8"?>
-      #   <add>
-      #     <doc>
-      #       <field name="content">
-      #           key__=__value
-      #           key__=__another_value
-      #           other_key__=__yet another value
-      #       </field>
-      #     </doc>
-      #   </add>
-      # The document as generated has minimal newlines and formatting, however.
-      def pointyize_add
-        xml = ""
-        xml << START_XML << ADD_DOC
-        xml << (FLD_CHEF_ID_FMT % @obj_id)
-        xml << (FLD_CHEF_DB_FMT % @database)
-        xml << (FLD_CHEF_TY_FMT % @obj_type)
-        xml << START_CONTENT
-        content = ""
+      def send_to_redis
+        redis = redis_init
+        sep = '\001'
         flattened_object.each do |field, values|
-          values.each do |v|
-            content << (KEYVAL_FMT % [field, v])
-          end
+          values.each do |value|
+            key = [@database, @obj_type, field, value].join(sep)
+            redis.sadd(key, @obj_id)
         end
-        xml << content.fast_xs
-        xml << CLOSE_FIELD      # ends content
-        xml << (FLD_DATA_BAG % @data_bag.fast_xs) if @data_bag
-        xml << END_ADD_DOC
-        @xml_time = Time.now.to_f - @start_time
-        xml
       end
 
       # Takes a succinct document id, like 2342, and turns it into something
@@ -224,8 +151,6 @@ module Opscode
       def post_to_solr(document, &logger_block)
         log.debug("POSTing document to SOLR:\n#{document}")
         http_req = EventMachine::HttpRequest.new(solr_url).post(:body => document, :timeout => 1200, :head => CONTENT_TYPE_XML)
-        http_request_started
-
         http_req.callback do
           completed
           if http_req.response_header.status == 200
@@ -241,8 +166,6 @@ module Opscode
       end
 
       def completed
-        @solr_post_time = Time.now.to_f - @start_time
-        self.class.http_request_completed(self)
         @on_completion_block.call
       end
 
@@ -250,24 +173,13 @@ module Opscode
         Time.now.utc.to_i - @enqueued_at
       end
 
-      def solr_url
-        'http://127.0.0.1:8983/solr/update'
+      def redis_init
+        # TODO: configure host/port here
+        Redis.new
       end
 
       def indexed_object
         "#{@obj_type}[#{@obj_id}] database[#{@database}]"
-      end
-
-      def http_request_started
-        self.class.http_request_started(self)
-      end
-
-      def eql?(other)
-        other.hash == hash
-      end
-
-      def hash
-        "#{action}#{indexed_object}#@enqueued_at#{self.class.name}".hash
       end
 
     end
