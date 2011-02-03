@@ -1,7 +1,14 @@
-= Opscode Expander
-
-=== NOTE:
-Internal Use Only
+= Chef Expander
 
 = What's This?
-Opscode's parallelized Chef-Solr-Indexer Implementation.
+Chef Expander replaces the chef-solr-indexer daemon that was included with Chef 0.8 and 0.9
+
+= Dependencies
+
+* bunny
+* yajl
+* eventmachine
+* em-http-request
+* amqp
+* highline
+
