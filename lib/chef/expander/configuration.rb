@@ -124,7 +124,6 @@ module Chef
         end
 
         configurable :node_count do
-          pp :self => self
           invalid("You must specify the cluster size as an integer") unless node_count.kind_of?(Integer)
           invalid("The cluster size (node-count) cannot be smaller than the index") unless node_count >= index.to_i
         end
