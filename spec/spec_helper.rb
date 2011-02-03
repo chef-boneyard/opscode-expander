@@ -22,7 +22,7 @@ require 'pp'
 require 'stringio'
 require 'rubygems'
 require 'bunny'
-$:.unshift(File.dirname(__FILE__) + '/../lib/')
+$:.unshift(File.expand_path('../../lib/', __FILE__))
 require 'chef/expander'
 
 include Chef

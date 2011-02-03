@@ -125,6 +125,13 @@ describe Expander::Node do
       @node.log.init(@log_stream)
     end
 
+    after do
+      b = Bunny.new(OPSCODE_EXPANDER_MQ_CONFIG)
+      b.start
+      b.exchange(@node.broadcast_control_exchange_name, :type => :fanout).delete
+      b.stop
+    end
+
     it "receives messages on the broadcast exchange" do
       messages = []
 

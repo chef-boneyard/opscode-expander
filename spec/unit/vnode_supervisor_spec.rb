@@ -32,6 +32,14 @@ describe Expander::VNodeSupervisor do
     @vnode = Expander::VNode.new("42", @vnode_supervisor)
   end
 
+  after do
+    b = Bunny.new(OPSCODE_EXPANDER_MQ_CONFIG)
+    b.start
+    b.exchange(@vnode_supervisor.local_node.broadcast_control_exchange_name, :type => :fanout).delete
+    b.queue(@vnode_supervisor.local_node.broadcast_control_queue_name).purge
+    b.stop
+  end
+
   it "keeps a list of vnodes" do
     @vnode_supervisor.vnodes.should be_empty
     @vnode_supervisor.vnode_added(@vnode)
@@ -57,7 +65,6 @@ describe Expander::VNodeSupervisor do
   end
 
   it "subscribes to the control queue" do
-    control_queue_msg = nil
     AMQP.start(OPSCODE_EXPANDER_MQ_CONFIG) do
       @vnode_supervisor.start([])
       @vnode_supervisor.should_receive(:process_control_message).with("hello_robot_overlord")
