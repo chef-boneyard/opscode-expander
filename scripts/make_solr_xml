@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 #
 # Author:: Daniel DeLeo (<dan@opscode.com>)
 # Author:: Seth Falcon (<seth@opscode.com>)
@@ -18,10 +19,7 @@
 # limitations under the License.
 #
 
-#!/usr/bin/env ruby
-
 require "rubygems"
-require "bundler/setup"
 $:.unshift(File.expand_path(File.dirname(__FILE__) + '/../lib'))
 
 require 'yajl'
