@@ -25,7 +25,7 @@ require "bundler/setup"
 $:.unshift(File.expand_path(File.dirname(__FILE__) + '/../lib'))
 
 require 'yajl'
-require 'chef_search/expander/solrizer'
+require 'chef/expander/solrizer'
 
 USAGE = <<-EOH
 #{$0} [file ...]
