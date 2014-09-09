@@ -38,6 +38,7 @@ module Opscode
       TYPE        = "type"
       DATABASE    = "database"
       ENQUEUED_AT = "enqueued_at"
+      SOLR_URL    = "solr_url"
 
       DATA_BAG_ITEM = "data_bag_item"
       DATA_BAG      = "data_bag"
@@ -62,6 +63,8 @@ module Opscode
 
       attr_reader :enqueued_at
 
+      attr_reader :solr_url
+
       def initialize(object_command_json, &on_completion_block)
         @start_time = Time.now.to_f
         @on_completion_block = on_completion_block
@@ -82,6 +85,7 @@ module Opscode
         @obj_type    = @indexer_payload[TYPE]
         @enqueued_at = @indexer_payload[ENQUEUED_AT]
         @data_bag = @obj_type == DATA_BAG_ITEM ? @chef_object[DATA_BAG] : nil
+        @solr_url = (@indexer_payload[SOLR_URL] || Expander.config.solr_url)
       end
 
       def parse(serialized_object)
@@ -202,8 +206,8 @@ module Opscode
       end
 
       def post_to_solr(document, &logger_block)
-        log.debug("POSTing document to SOLR:\n#{document}")
-        http_req = EventMachine::HttpRequest.new(solr_url).post(:body => document, :timeout => 1200, :head => CONTENT_TYPE_XML)
+        log.debug("POSTing document to SOLR (#{solr_update_url}):\n#{document}")
+        http_req = EventMachine::HttpRequest.new(solr_update_url).post(:body => document, :timeout => 1200, :head => CONTENT_TYPE_XML)
         http_request_started
 
         http_req.callback do
@@ -230,12 +234,13 @@ module Opscode
         Time.now.utc.to_i - @enqueued_at
       end
 
-      def solr_url
-        @solr_url ||= Expander.config.solr_url + '/solr/update'
+      def solr_update_url
+        solr_url + '/solr/update'
       end
 
       def indexed_object
-        "#{@obj_type}[#{@obj_id}] database[#{@database}]"
+        # Let's see about getting org name here as well
+        "#{@obj_type}[#{@obj_id}] #{@data_bag} database[#{@database}]"
       end
 
       def http_request_started

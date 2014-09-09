@@ -98,12 +98,46 @@ describe Expander::Solrizer do
     describe "when using a non-default config" do
       before do
         Expander.config.solr_url = "http://solrbox.com:4567"
+        @solrizer = Expander::Solrizer.new(@update_json) { :no_op }
+        @log_stream = StringIO.new
+        @solrizer.log.init(@log_stream)
       end
 
       it "should return the correct solr url" do
-        @solrizer.solr_url.should eql("http://solrbox.com:4567/solr/update")
+        @solrizer.solr_url.should eql("http://solrbox.com:4567")
+      end
+
+      it "should return the correct solr update url" do
+        @solrizer.solr_update_url.should eql("http://solrbox.com:4567/solr/update")
       end
     end
+
+    describe "when solr url is provided in payload" do
+      before do
+        @now = Time.now.utc.to_i
+        @indexer_payload = {:item => {:foo => {:bar => :baz}},
+          :type => :node,
+          :database => :testdb,
+          :id => "2342",
+          :enqueued_at => @now,
+          :solr_url => "http://payload-solr"}
+        @update_object = {:action => "add", :payload => @indexer_payload}
+        @update_json = Yajl::Encoder.encode(@update_object)
+        @solrizer = Expander::Solrizer.new(@update_json) { :no_op }
+
+        @log_stream = StringIO.new
+        @solrizer.log.init(@log_stream)
+      end
+
+      it "should return the solr url from payload" do
+        @solrizer.solr_url.should eql("http://payload-solr")
+      end
+
+      it "should return the solr update url from payload" do
+        @solrizer.solr_update_url.should eql("http://payload-solr/solr/update")
+      end
+    end
+
 
     describe "when flattening to XML" do
       before do
